@@ -28,7 +28,7 @@ class NayinHelper {
     WuXing.wood, WuXing.wood, // 戊戌己亥平地木
     WuXing.earth, WuXing.earth, // 庚子辛丑壁上土
     WuXing.metal, WuXing.metal, // 壬寅癸卯金箔金
-    WuXing.fire, WuXing.fire, // 甲辰乙巳覆灯火
+    WuXing.fire, WuXing.fire, // 甲辰乙巳佛灯火
     WuXing.water, WuXing.water, // 丙午丁未天河水
     WuXing.earth, WuXing.earth, // 戊申己酉大驿土
     WuXing.metal, WuXing.metal, // 庚戌辛亥钗钏金

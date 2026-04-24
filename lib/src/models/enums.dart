@@ -102,6 +102,7 @@ enum BaziInteraction {
   /// 天干相克 (如：甲克戊)
   stemRestraint,
 
+  stemGenerate, // ★ 新增：天干相生==================
   // --- 地支关系 ---
   /// 地支六合 (如：子丑合)
   branchCombination,

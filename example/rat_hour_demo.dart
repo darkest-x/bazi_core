@@ -3,11 +3,11 @@ import 'package:sxwnl_spa_dart/sxwnl_spa_dart.dart';
 
 void main() {
   print('=== 🌙 子时流派逻辑交叉验证 Demo ===');
-  print('测试时间: 2000-01-01 23:30:00');
-  print('日柱背景: 1月1日为戊午日, 1月2日为己未日');
+  print('测试时间: 1999-12-31 23:30:00');
+  print('日柱背景:  , 12月31日为丁巳日');
   print('------------------------------------');
 
-  final testTime = AstroDateTime(2000, 1, 1, 23, 30, 0);
+  final testTime = AstroDateTime(1999, 12, 31, 23, 30, 0);
 
   // 1. 不分早晚子 (传统派)
   final tp1 = TimePack.createBySolarTime(
@@ -16,7 +16,7 @@ void main() {
   );
   final bz1 = TimeAdaptor.fromSolar(tp1);
   print('【1. 不分早晚子】结果: ${bz1.day}日 ${bz1.time}时');
-  print('   -> 预期: 23:00 准时换日, 结果应为 [己未日 甲子时]');
+  print('   -> 预期: 23:00 准时换日, 结果应为 [戊午日 壬子时]');
 
   print('');
 

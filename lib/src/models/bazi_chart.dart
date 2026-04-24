@@ -76,7 +76,7 @@ class BaziChart {
 
   /// 计算命宫
   /// 算法来源：《三命通会》
-  GanZhi _calculateMingGong() {
+  /*   GanZhi _calculateMingGong() {
     final m = bazi.month.zhi.index; // 八字月支 (0-based)
     final h = bazi.time.zhi.index; // 八字时支 (0-based)
 
@@ -91,6 +91,25 @@ class BaziChart {
     final branchIndex = (monthPos + (3 - h + 12) % 12) % 12;
 
     // 步骤三：五虎遁起天干
+    final stem = _calculateStemForGong(branchIndex);
+    return GanZhi(stem, DiZhi.values[branchIndex]);
+  } */
+  GanZhi _calculateMingGong() {
+    final m = bazi.month.zhi.index; // 0‑based: 子=0, 丑=1, …, 亥=11
+    final h = bazi.time.zhi.index; // 同上
+
+    final int sum = m + h;
+    int branchIndex;
+
+    if (sum < 12) {
+      branchIndex = 11 - sum;
+    } else {
+      branchIndex = 23 - sum;
+    }
+    // 防御性取模，确保在 0~11（公式理论上不需要）
+    branchIndex = branchIndex % 12;
+
+    // 天干仍用五虎遁
     final stem = _calculateStemForGong(branchIndex);
     return GanZhi(stem, DiZhi.values[branchIndex]);
   }

@@ -6,6 +6,7 @@ import 'bazi_table.dart';
 class InteractionNode<T> {
   /// 柱的位置来源 (如：year, decade)
   final PillarType pillar;
+
   /// 干或支的值
   final T value;
 
@@ -30,8 +31,10 @@ class InteractionNode<T> {
 class InteractionResult {
   /// 刑冲合害类型
   final BaziInteraction type;
+
   /// 参与感应的所有节点列表
   final List<InteractionNode> nodes;
+
   /// 化合后的五行结果 (仅限合局，其余为 null)
   final WuXing? combinedWuXing;
 
@@ -62,24 +65,37 @@ class BaziInteractionCalculator {
     for (int i = 0; i < 5; i++) {
       final t1 = TianGan.values[i];
       final t2 = TianGan.values[i + 5];
-      final matched = stems.where((s) => s.value == t1 || s.value == t2).toList();
+      final matched = stems
+          .where((s) => s.value == t1 || s.value == t2)
+          .toList();
       final types = matched.map((e) => e.value.index % 10).toSet();
       if (types.length == 2) {
-        results.add(InteractionResult(
-          type: BaziInteraction.stemCombination,
-          nodes: matched,
-          combinedWuXing: BaziTable.getStemCombinationResult(t1, t2),
-        ));
+        results.add(
+          InteractionResult(
+            type: BaziInteraction.stemCombination,
+            nodes: matched,
+            combinedWuXing: BaziTable.getStemCombinationResult(t1, t2),
+          ),
+        );
       }
     }
 
     // 2. 天干相冲
-    final clashPairs = [[0, 6], [1, 7], [2, 8], [3, 9]];
+    final clashPairs = [
+      [0, 6],
+      [1, 7],
+      [2, 8],
+      [3, 9],
+    ];
     for (var pair in clashPairs) {
-      final matched = stems.where((s) => pair.contains(s.value.index % 10)).toList();
+      final matched = stems
+          .where((s) => pair.contains(s.value.index % 10))
+          .toList();
       final types = matched.map((e) => e.value.index % 10).toSet();
       if (types.length == 2) {
-        results.add(InteractionResult(type: BaziInteraction.stemClash, nodes: matched));
+        results.add(
+          InteractionResult(type: BaziInteraction.stemClash, nodes: matched),
+        );
       }
     }
 
@@ -93,7 +109,26 @@ class BaziInteractionCalculator {
       }).toList();
       final types = matched.map((e) => e.value.index % 10).toSet();
       if (types.length == 2) {
-        results.add(InteractionResult(type: BaziInteraction.stemRestraint, nodes: matched));
+        results.add(
+          InteractionResult(
+            type: BaziInteraction.stemRestraint,
+            nodes: matched,
+          ),
+        );
+      }
+    }
+
+    // 4. 天干相生 ==============新添加
+    for (int i = 0; i < stems.length; i++) {
+      for (int j = i + 1; j < stems.length; j++) {
+        if (BaziTable.isStemGenerate(stems[i].value, stems[j].value)) {
+          results.add(
+            InteractionResult(
+              type: BaziInteraction.stemGenerate,
+              nodes: [stems[i], stems[j]],
+            ),
+          );
+        }
       }
     }
 
@@ -111,7 +146,10 @@ class BaziInteractionCalculator {
     Set<BaziInteraction>? enabledTypes,
   }) {
     List<InteractionResult> results = [];
-    final nodes = List.generate(branches.length, (i) => _InternalNode(i, branches[i]));
+    final nodes = List.generate(
+      branches.length,
+      (i) => _InternalNode(i, branches[i]),
+    );
     final Set<String> suppressedPairs = {};
 
     // ===========================================================================
@@ -124,28 +162,40 @@ class BaziInteractionCalculator {
           final values = trio.map((e) => e.value.index % 12).toSet();
 
           // 1. 三会局
-          for (int g = 0; g < BaziTable.branchTripleDirectionGroups.length; g++) {
+          for (
+            int g = 0;
+            g < BaziTable.branchTripleDirectionGroups.length;
+            g++
+          ) {
             final group = BaziTable.branchTripleDirectionGroups[g];
             if (values.containsAll(group)) {
-              results.add(InteractionResult(
-                type: BaziInteraction.branchTripleDirection,
-                nodes: trio.map((e) => e.original).toList(),
-                combinedWuXing: BaziTable.getTripleDirectionWuXing(g),
-              ));
+              results.add(
+                InteractionResult(
+                  type: BaziInteraction.branchTripleDirection,
+                  nodes: trio.map((e) => e.original).toList(),
+                  combinedWuXing: BaziTable.getTripleDirectionWuXing(g),
+                ),
+              );
               // 三会通常抑制内部的各种感应
               _suppressAllPairs(suppressedPairs, trio);
             }
           }
 
           // 2. 三合局
-          for (int g = 0; g < BaziTable.branchTripleCombinationGroups.length; g++) {
+          for (
+            int g = 0;
+            g < BaziTable.branchTripleCombinationGroups.length;
+            g++
+          ) {
             final group = BaziTable.branchTripleCombinationGroups[g];
             if (values.containsAll(group)) {
-              results.add(InteractionResult(
-                type: BaziInteraction.branchTripleCombination,
-                nodes: trio.map((e) => e.original).toList(),
-                combinedWuXing: BaziTable.getTripleCombinationWuXing(g),
-              ));
+              results.add(
+                InteractionResult(
+                  type: BaziInteraction.branchTripleCombination,
+                  nodes: trio.map((e) => e.original).toList(),
+                  combinedWuXing: BaziTable.getTripleCombinationWuXing(g),
+                ),
+              );
               _suppressAllPairs(suppressedPairs, trio);
             }
           }
@@ -153,10 +203,12 @@ class BaziInteractionCalculator {
           // 3. 三刑全
           for (var group in BaziTable.branchTriplePunishmentGroups) {
             if (values.containsAll(group)) {
-              results.add(InteractionResult(
-                type: BaziInteraction.branchTriplePunishment,
-                nodes: trio.map((e) => e.original).toList(),
-              ));
+              results.add(
+                InteractionResult(
+                  type: BaziInteraction.branchTriplePunishment,
+                  nodes: trio.map((e) => e.original).toList(),
+                ),
+              );
               // 关键修复：三刑全也需要抑制两两相刑
               _suppressAllPairs(suppressedPairs, trio);
             }
@@ -177,48 +229,91 @@ class BaziInteractionCalculator {
 
         // 1. 半合/拱合
         if (!isSuppressed) {
-          for (int g = 0; g < BaziTable.branchTripleCombinationGroups.length; g++) {
+          for (
+            int g = 0;
+            g < BaziTable.branchTripleCombinationGroups.length;
+            g++
+          ) {
             final group = BaziTable.branchTripleCombinationGroups[g];
             final vA = a.value.index % 12;
             final vB = b.value.index % 12;
             if (group.contains(vA) && group.contains(vB) && vA != vB) {
               bool hasMiddle = vA == group[1] || vB == group[1];
-              results.add(InteractionResult(
-                type: hasMiddle ? BaziInteraction.branchHalfCombination : BaziInteraction.branchArchingCombination,
-                nodes: [a.original, b.original],
-                combinedWuXing: BaziTable.getTripleCombinationWuXing(g),
-              ));
+              results.add(
+                InteractionResult(
+                  type: hasMiddle
+                      ? BaziInteraction.branchHalfCombination
+                      : BaziInteraction.branchArchingCombination,
+                  nodes: [a.original, b.original],
+                  combinedWuXing: BaziTable.getTripleCombinationWuXing(g),
+                ),
+              );
             }
           }
         }
 
         // 2. 两两相刑
         if (!isSuppressed && BaziTable.isBranchPunishment(a.value, b.value)) {
-          results.add(InteractionResult(type: BaziInteraction.branchPunishment, nodes: [a.original, b.original]));
+          results.add(
+            InteractionResult(
+              type: BaziInteraction.branchPunishment,
+              nodes: [a.original, b.original],
+            ),
+          );
         }
 
         // 3. 六合、六冲等基础关系 (不被三元素抑制，但需要合并同类项)
         if (BaziTable.isBranchCombination(a.value, b.value)) {
-          results.add(InteractionResult(
-            type: BaziInteraction.branchCombination,
-            nodes: [a.original, b.original],
-            combinedWuXing: BaziTable.getBranchCombinationResult(a.value, b.value),
-          ));
+          results.add(
+            InteractionResult(
+              type: BaziInteraction.branchCombination,
+              nodes: [a.original, b.original],
+              combinedWuXing: BaziTable.getBranchCombinationResult(
+                a.value,
+                b.value,
+              ),
+            ),
+          );
         }
         if (BaziTable.isBranchClash(a.value, b.value)) {
-          results.add(InteractionResult(type: BaziInteraction.branchClash, nodes: [a.original, b.original]));
+          results.add(
+            InteractionResult(
+              type: BaziInteraction.branchClash,
+              nodes: [a.original, b.original],
+            ),
+          );
         }
         if (BaziTable.isBranchHarm(a.value, b.value)) {
-          results.add(InteractionResult(type: BaziInteraction.branchHarm, nodes: [a.original, b.original]));
+          results.add(
+            InteractionResult(
+              type: BaziInteraction.branchHarm,
+              nodes: [a.original, b.original],
+            ),
+          );
         }
         if (BaziTable.isBranchDestruction(a.value, b.value)) {
-          results.add(InteractionResult(type: BaziInteraction.branchDestruction, nodes: [a.original, b.original]));
+          results.add(
+            InteractionResult(
+              type: BaziInteraction.branchDestruction,
+              nodes: [a.original, b.original],
+            ),
+          );
         }
         if (BaziTable.isBranchHiddenCombination(a.value, b.value)) {
-          results.add(InteractionResult(type: BaziInteraction.branchHiddenCombination, nodes: [a.original, b.original]));
+          results.add(
+            InteractionResult(
+              type: BaziInteraction.branchHiddenCombination,
+              nodes: [a.original, b.original],
+            ),
+          );
         }
         if (BaziTable.isBranchSeverance(a.value, b.value)) {
-          results.add(InteractionResult(type: BaziInteraction.branchSeverance, nodes: [a.original, b.original]));
+          results.add(
+            InteractionResult(
+              type: BaziInteraction.branchSeverance,
+              nodes: [a.original, b.original],
+            ),
+          );
         }
       }
     }
@@ -228,7 +323,12 @@ class BaziInteractionCalculator {
     for (var idx in selfTypes) {
       final matched = branches.where((b) => b.value.index % 12 == idx).toList();
       if (matched.length >= 2) {
-        results.add(InteractionResult(type: BaziInteraction.branchSelfPunishment, nodes: matched));
+        results.add(
+          InteractionResult(
+            type: BaziInteraction.branchSelfPunishment,
+            nodes: matched,
+          ),
+        );
       }
     }
 
@@ -239,7 +339,8 @@ class BaziInteractionCalculator {
     return finalResults;
   }
 
-  static String _getPairKey(int id1, int id2) => id1 < id2 ? '$id1-$id2' : '$id2-$id1';
+  static String _getPairKey(int id1, int id2) =>
+      id1 < id2 ? '$id1-$id2' : '$id2-$id1';
 
   static void _suppressAllPairs(Set<String> set, List<_InternalNode> trio) {
     set.add(_getPairKey(trio[0].id, trio[1].id));

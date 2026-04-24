@@ -24,17 +24,17 @@ class BaziTable {
   // --- 地支藏干映射表 ---
   static final List<List<TianGan>> _diZhiCangGanTable = [
     [TianGan.values[9]], // 子: 癸
-    [TianGan.values[5], TianGan.values[9], TianGan.values[7]], // 丑: 己癸辛
-    [TianGan.values[0], TianGan.values[2], TianGan.values[4]], // 寅: 甲丙戊
+    [TianGan.values[9], TianGan.values[7], TianGan.values[5]], // 丑: 癸辛己
+    [TianGan.values[0], TianGan.values[2], TianGan.values[5]], // 寅: 甲丙己
     [TianGan.values[1]], // 卯: 乙
-    [TianGan.values[4], TianGan.values[1], TianGan.values[9]], // 辰: 戊乙癸
+    [TianGan.values[9], TianGan.values[1], TianGan.values[4]], // 辰: 癸乙戊
     [TianGan.values[2], TianGan.values[6], TianGan.values[4]], // 巳: 丙庚戊
-    [TianGan.values[3], TianGan.values[5]], // 午: 丁己
-    [TianGan.values[5], TianGan.values[3], TianGan.values[1]], // 未: 己丁乙
-    [TianGan.values[6], TianGan.values[8], TianGan.values[4]], // 申: 庚壬戊
+    [TianGan.values[3]], // 午: 丁
+    [TianGan.values[3], TianGan.values[1], TianGan.values[5]], // 未: 丁乙己
+    [TianGan.values[6], TianGan.values[8], TianGan.values[5]], // 申: 庚壬己
     [TianGan.values[7]], // 酉: 辛
-    [TianGan.values[4], TianGan.values[7], TianGan.values[3]], // 戌: 戊辛丁
-    [TianGan.values[8], TianGan.values[0]], // 亥: 壬甲
+    [TianGan.values[3], TianGan.values[7], TianGan.values[4]], // 戌: 丁辛戊
+    [TianGan.values[8], TianGan.values[0], TianGan.values[4]], // 亥: 壬甲戊
   ];
 
   // ===========================================================================
@@ -65,6 +65,21 @@ class BaziTable {
     3,
   ];
 
+  // 4. 天干异性相生配对表
+  // 甲(0)阳木生丙(2)阳火 -> 实际为甲生丁(3)阴火, 乙(1)阴木生丙(2)阳火
+  // --- 天干五行映射表 (0:甲, 1:乙, 2:丙, 3:丁, 4:戊, 5:己, 6:庚, 7:辛, 8:壬, 9:癸) ---
+  static const List<int> _stemGeneratePartners = [
+    3, // 甲 -> 丁
+    2, // 乙 -> 丙
+    5, // 丙 -> 己
+    4, // 丁 -> 戊
+    7, // 戊 -> 辛
+    6, // 己 -> 庚
+    9, // 庚 -> 癸
+    8, // 辛 -> 壬
+    1, // 壬 -> 乙
+    0, // 癸 -> 甲
+  ];
   // 4. 天干四冲配对表 (甲庚, 乙辛, 丙壬, 丁癸; 戊己填 -1)
   static const List<int> _stemClashPartners = [6, 7, 8, 9, -1, -1, 0, 1, 2, 3];
 
@@ -118,6 +133,19 @@ class BaziTable {
     int idxB = b.index % 10;
     return _stemRestraintPartners[idxA] == idxB ||
         _stemRestraintPartners[idxB] == idxA;
+  }
+
+  /// 【天干相生】判定 (仅限异性相生：阳生阴、阴生阳)
+  /*   static bool isStemGenerate(TianGan a, TianGan b) {
+    int idxA = a.index % 10;
+    int idxB = b.index % 10;
+    return _stemGeneratePartners[idxA] == idxB ||
+        _stemGeneratePartners[idxB] == idxA;
+  } */
+  static bool isStemGenerate(TianGan a, TianGan b) {
+    int idxA = a.index % 10;
+    int idxB = b.index % 10;
+    return _stemGeneratePartners[idxA] == idxB;
   }
 
   /// 【天干相冲】判定 (甲庚、乙辛、丙壬、丁癸)
